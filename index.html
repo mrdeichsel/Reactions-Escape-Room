@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stockroom 204: A Chemistry Escape Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root {
+--bg: #E6EDDD; --grid: #D3DEC5; --paper: #F8FAF4; --ink: #1B2B44; --muted: #4F5E57; --line: #B7C7A9;
+--blue: #2361A3; --red: #BF3328; --yellow: #D9A71C; --white: #FFFFFF;
+--ok: #2A7445; --okbg: #E2F0E4; --bad: #A8372B; --badbg: #F6E4E0; --hintbg: #FBF3D8;
+--display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+--body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+color-scheme: light;
+box-sizing: border-box;
+padding-top: env(safe-area-inset-top, 0px);
+padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+:root:not([data-theme="light"]) {
+--bg: #111915; --grid: #18231D; --paper: #17211B; --ink: #E5ECE4; --muted: #A2B2A7; --line: #2F3F35;
+--blue: #5C98DB; --red: #E2634F; --yellow: #E8BF45; --white: #E9EEE8;
+--ok: #63BE84; --okbg: #1B3324; --bad: #EA7C6C; --badbg: #3A211D; --hintbg: #312A15;
+color-scheme: dark;
+}
+}
+:root[data-theme="dark"] {
+--bg: #111915; --grid: #18231D; --paper: #17211B; --ink: #E5ECE4; --muted: #A2B2A7; --line: #2F3F35;
+--blue: #5C98DB; --red: #E2634F; --yellow: #E8BF45; --white: #E9EEE8;
+--ok: #63BE84; --okbg: #1B3324; --bad: #EA7C6C; --badbg: #3A211D; --hintbg: #312A15;
+color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { height: 100%; scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 84px); }
+body {
+margin: 0; min-height: 100%;
+font-family: var(--body); font-size: 1.0625rem; line-height: 1.5; color: var(--ink);
+background-color: var(--bg);
+background-image:
+linear-gradient(var(--grid) 1px, transparent 1px),
+linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+background-size: 24px 24px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+sub { font-size: 0.72em; line-height: 0; }
+
+
+.wrap { max-width: 780px; margin: 0 auto; padding: 0 1rem; }
+
+
+/* Top bar */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); border-bottom: 2px solid var(--ink); }
+.bar .wrap { display: flex; align-items: center; gap: 0.9rem; padding-top: 0.55rem; padding-bottom: 0.55rem; }
+.bar .mini { width: 44px; height: 44px; flex: none; }
+.bar .name { font-family: var(--display); font-weight: 800; font-size: 1.15rem; letter-spacing: -0.01em; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar .name small { font-family: var(--body); font-weight: 400; font-size: 0.85rem; color: var(--muted); margin-left: 0.4rem; }
+.clock { display: flex; align-items: center; gap: 0.6rem; }
+.time { font-family: var(--display); font-weight: 800; font-size: 1.6rem; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.time.low { color: var(--red); }
+.time.over { color: var(--bad); }
+.ghost { background: none; border: 1.5px solid var(--line); border-radius: 6px; padding: 0.25rem 0.6rem; cursor: pointer; font-size: 0.9rem; }
+.ghost:hover { border-color: var(--ink); }
+
+
+/* Hero */
+.hero { display: grid; grid-template-columns: auto 1fr; gap: 1.6rem; align-items: center; padding: 2.2rem 0 1.4rem; }
+.hero svg { width: 168px; height: 168px; }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(2.3rem, 7vw, 3.6rem); line-height: 0.95; letter-spacing: -0.035em; margin: 0 0 0.6rem; }
+.lede { margin: 0; max-width: 34em; color: var(--muted); }
+@media (max-width: 560px) { .hero { grid-template-columns: 1fr; gap: 1rem; padding-top: 1.4rem; } .hero svg { width: 120px; height: 120px; } }
+
+
+/* Diamond */
+.q { stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; transition: fill 600ms ease; }
+.q.empty { fill: var(--paper); }
+.q.blue { fill: var(--blue); } .q.red { fill: var(--red); } .q.yellow { fill: var(--yellow); } .q.white { fill: var(--white); }
+.qlabel { font-family: var(--display); font-weight: 800; font-size: 19px; text-anchor: middle; dominant-baseline: central; fill: var(--muted); }
+.qlabel.on { fill: #fff; } .qlabel.on.dark { fill: #1B2B44; }
+@media (prefers-reduced-motion: reduce) { .q { transition: none; } }
+
+
+/* Panels */
+.panel { background: var(--paper); border: 2px solid var(--ink); border-radius: 10px; padding: 1.3rem 1.3rem 1.4rem; margin: 0 0 1.4rem; }
+.panel h2 { font-family: var(--display); font-weight: 800; font-size: 1.55rem; letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 0.35rem; }
+.panel > p { margin: 0 0 1rem; max-width: 40em; }
+.room { border-left-width: 12px; }
+.room[data-c="blue"] { border-left-color: var(--blue); }
+.room[data-c="red"] { border-left-color: var(--red); }
+.room[data-c="yellow"] { border-left-color: var(--yellow); }
+.room[data-c="white"] { border-left-color: var(--ink); }
+.roomhead { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+.count { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+
+.room.locked p { margin: 0; }
+.cleared { display: inline-block; background: var(--okbg); color: var(--ok); font-weight: 700; border-radius: 5px; padding: 0.1rem 0.55rem; font-size: 0.95rem; }
+
+
+/* Items */
+.items { list-style: none; margin: 0; padding: 0; counter-reset: it; }
+.item { counter-increment: it; border-top: 1.5px solid var(--line); padding: 1rem 0 1rem 2.4rem; position: relative; }
+.item:first-child { border-top: 0; padding-top: 0.4rem; }
+.item::before { content: counter(it); position: absolute; left: 0; top: 1rem; width: 1.7rem; height: 1.7rem; border: 1.5px solid var(--ink); border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 0.9rem; }
+.item:first-child::before { top: 0.4rem; }
+.item.done::before { content: "✓"; background: var(--ok); border-color: var(--ok); color: var(--paper); }
+.prompt { font-weight: 700; font-size: 1.15rem; margin: 0 0 0.55rem; }
+.prompt .note { font-weight: 400; font-size: 0.95rem; color: var(--muted); display: block; }
+.boss { display: inline-block; font-size: 0.8rem; font-weight: 700; background: var(--red); color: #fff; border-radius: 4px; padding: 0 0.4rem; margin-left: 0.4rem; vertical-align: 2px; }
+.row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.field { border: 2px solid var(--line); background: var(--bg); border-radius: 7px; padding: 0.45rem 0.65rem; min-width: 0; }
+.field:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 30%, transparent); }
+.field:disabled { opacity: 0.75; }
+.formula { width: 13rem; font-size: 1.1rem; }
+.products { flex: 1 1 15rem; font-size: 1.1rem; }
+select.field { padding-right: 0.4rem; }
+.preview { color: var(--muted); font-size: 1rem; min-height: 1.5em; margin-top: 0.3rem; }
+.preview b { color: var(--ink); font-size: 1.15rem; }
+.btn { background: var(--ink); color: var(--paper); border: 2px solid var(--ink); border-radius: 7px; padding: 0.45rem 1rem; font-weight: 700; cursor: pointer; }
+.btn:hover { filter: brightness(1.15); }
+.btn:disabled { opacity: 0.4; cursor: default; filter: none; }
+.hintbtn { background: none; border: 2px solid var(--line); border-radius: 7px; padding: 0.43rem 0.8rem; cursor: pointer; color: var(--muted); }
+.hintbtn:hover { border-color: var(--yellow); color: var(--ink); }
+.fb { margin: 0.55rem 0 0; padding: 0.4rem 0.7rem; border-radius: 6px; font-size: 0.98rem; }
+.fb:empty { display: none; }
+.fb.ok { background: var(--okbg); color: var(--ok); font-weight: 700; }
+.fb.bad { background: var(--badbg); color: var(--bad); }
+.hint { margin: 0.55rem 0 0; padding: 0.45rem 0.75rem; background: var(--hintbg); border-left: 4px solid var(--yellow); border-radius: 0 6px 6px 0; font-size: 0.98rem; }
+
+
+/* Equations */
+.eq { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.4rem; font-size: 1.2rem; margin-bottom: 0.2rem; }
+.sp { display: inline-flex; align-items: center; gap: 0.15rem; white-space: nowrap; }
+.coef { width: 2.6rem; text-align: center; font-weight: 700; font-size: 1.1rem; padding: 0.3rem 0.2rem; -moz-appearance: textfield; }
+.coef::-webkit-outer-spin-button, .coef::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.op { color: var(--muted); padding: 0 0.15rem; }
+.eq + .row { margin-top: 0.7rem; }
+
+
+/* Final door */
+.story { font-style: italic; }
+.order { margin: 0 0 1rem; padding-left: 1.3rem; }
+.dials { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.dial { display: grid; grid-template-rows: auto auto auto auto; justify-items: center; gap: 0.2rem; width: 4.6rem; }
+.dial button { width: 100%; background: var(--bg); border: 2px solid var(--line); border-radius: 6px; cursor: pointer; padding: 0.1rem 0; font-size: 0.9rem; }
+.dial button:hover { border-color: var(--ink); }
+.dial output { font-family: var(--display); font-weight: 800; font-size: 2.4rem; line-height: 1.15; width: 100%; text-align: center; background: var(--ink); color: var(--paper); border-radius: 6px; font-variant-numeric: tabular-nums; }
+.dial span { font-size: 0.75rem; color: var(--muted); text-align: center; line-height: 1.2; min-height: 2.4em; }
+.shake { animation: shake 400ms; }
+@keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { .shake { animation: none; } }
+
+
+/* Setup */
+.choices { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.3rem 0 1.1rem; border: 0; padding: 0; }
+.choices legend { font-weight: 700; margin-bottom: 0.35rem; padding: 0; }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.chip span { display: block; border: 2px solid var(--line); border-radius: 999px; padding: 0.3rem 0.9rem; }
+.chip input:checked + span { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chip input:focus-visible + span { outline: 3px solid var(--blue); outline-offset: 2px; }
+label.block { display: block; font-weight: 700; margin-bottom: 0.3rem; }
+.team { width: min(100%, 22rem); margin-bottom: 1.1rem; }
+details { margin-top: 1.2rem; border-top: 1.5px solid var(--line); padding-top: 0.8rem; }
+summary { cursor: pointer; font-weight: 700; }
+details p { margin: 0.5rem 0 0; color: var(--muted); max-width: 40em; }
+
+
+/* Escaped */
+.escaped { text-align: center; padding: 2rem 1.3rem; }
+.escaped svg { width: 150px; height: 150px; }
+.escaped h2 { font-size: clamp(2.2rem, 7vw, 3.2rem); margin: 0.8rem 0 0.3rem; }
+.stats { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.6rem 2rem; margin: 1.2rem 0 1.4rem; }
+.stats div { min-width: 6rem; }
+.stats strong { display: block; font-family: var(--display); font-size: 1.8rem; font-variant-numeric: tabular-nums; }
+.stats span { color: var(--muted); font-size: 0.9rem; }
+
+
+footer { padding: 0.5rem 0 2.5rem; color: var(--muted); font-size: 0.9rem; }
+footer .wrap { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.room.locked { opacity: 0.6; border-style: dashed; border-left: 2px dashed var(--ink); }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="bar" id="bar" hidden>
+<div class="wrap">
+<svg class="mini" viewBox="-4 -4 128 128" aria-hidden="true" data-diamond="mini"></svg>
+<div class="name" id="barname">Stockroom 204</div>
+<div class="clock">
+<span class="time" id="time" role="timer" aria-label="Time remaining">45:00</span>
+<button class="ghost" id="pause" type="button">Pause</button>
+</div>
+</div>
+</div>
+
+
+<main class="wrap">
+<header class="hero" id="hero">
+<svg viewBox="-4 -4 128 128" role="img" aria-label="Hazard diamond showing rooms cleared" data-diamond="big"></svg>
+<div>
+<h1>Stockroom 204</h1>
+<p class="lede">The stockroom door sealed itself during inventory, and tomorrow’s lab needs what’s inside. The lock only opens for chemists who can label the shelf, fix the reaction log, and identify the unknown samples. Each room you clear fills one section of the hazard diamond. Fill all four to get out.</p>
+</div>
+</header>
+
+
+<section class="panel" id="setup" aria-labelledby="setup-h">
+<h2 id="setup-h">Before you go in</h2>
+<p>Hints cost one minute each. Wrong answers are free, but they’re counted. Rooms open one at a time.</p>
+<label class="block" for="team">Team name</label>
+<input class="field team" id="team" maxlength="40" autocomplete="off" placeholder="e.g. The Noble Gases">
+<fieldset class="choices">
+<legend>Time limit</legend>
+<label class="chip"><input type="radio" name="limit" value="1800"><span>30 min</span></label>
+<label class="chip"><input type="radio" name="limit" value="2700" checked><span>45 min</span></label>
+<label class="chip"><input type="radio" name="limit" value="3600"><span>60 min</span></label>
+<label class="chip"><input type="radio" name="limit" value="0"><span>No limit</span></label>
+</fieldset>
+<button class="btn" id="start" type="button">Start the clock</button>
+<details>
+<summary>For teachers</summary>
+<p>Every run draws a different set of questions from a larger bank, so neighboring teams won’t have identical puzzles. Room 1 has 6 of 14 formulas, Room 2 has 4 of 9 equations plus a redox challenge, Room 3 has 6 reactions (always including one that doesn’t happen), and the door uses 1 of 4 final reactions.</p>
+<p>Progress saves on this device, so a refresh won’t lose it. “Start over” at the bottom of the page clears it. The finish screen shows time, hints, and wrong attempts for you to check.</p>
+</details>
+</section>
+
+
+<div id="game" hidden>
+<section class="panel room" data-c="blue" id="room1"></section>
+<section class="panel room" data-c="red" id="room2"></section>
+<section class="panel room" data-c="yellow" id="room3"></section>
+<section class="panel room" data-c="white" id="room4"></section>
+</div>
+
+
+<section class="panel escaped" id="escaped" hidden aria-live="polite"></section>
+</main>
+
+
+<footer>
+<div class="wrap">
+<span>Formulas, balancing, and predicting products. Honors chemistry.</span>
+<button class="ghost" id="reset" type="button">Start over</button>
+</div>
+</footer>
+<script>
+const ELEMENTS = "H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn Fr Ra Ac Th Pa U Np Pu".split(" ");
+
+
+function normalize(s) {
+return String(s)
+.replace(/[\u2080-\u2089]/g, d => String(d.charCodeAt(0) - 0x2080))
+.replace(/
+/g,"(").replace(/
+/g, ")")
+.replace(/\s+/g, "");
+}
+
+
+function parseFormula(f) {
+let i = 0;
+const readNum = () => { let s = ""; while (i < f.length && /[0-9]/.test(f[i])) s += f[i++]; return s ? parseInt(s, 10) : 1; };
+function group(depth) {
+const counts = {};
+while (i < f.length) {
+const c = f[i];
+if (c === "(") {
+i++;
+const inner = group(depth + 1);
+if (f[i] !== ")") throw new Error("A parenthesis is never closed.");
+i++;
+const n = readNum();
+for (const k in inner) counts[k] = (counts[k] || 0) + inner[k] * n;
+} else if (c === ")") {
+if (depth === 0) throw new Error("There’s an extra closing parenthesis.");
+return counts;
+} else if (/[A-Z]/.test(c)) {
+let el = c; i++;
+if (i < f.length && /[a-z]/.test(f[i])) el += f[i++];
+if (!ELEMENTS.includes(el)) throw new Error(`“${el}” isn’t an element symbol. Check your capital letters.`);
+counts[el] = (counts[el] || 0) + readNum();
+} else if (/[a-z]/.test(c)) {
+throw new Error("Element symbols start with a capital letter.");
+} else if (/[0-9]/.test(c)) {
+throw new Error("A formula can’t start with a number here.");
+} else {
+throw new Error(`“${c}” can’t go in a formula.`);
+}
+}
+if (depth > 0) throw new Error("A parenthesis is never closed.");
+return counts;
+}
+const r = group(0);
+if (!Object.keys(r).length) throw new Error("Type a formula first.");
+return r;
+}
+
+
+function sameCounts(a, b) {
+const ka = Object.keys(a), kb = Object.keys(b);
+return ka.length === kb.length && ka.every(k => a[k] === b[k]);
+}
+
+
+function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+
+
+function checkBalance(eq, coefs) {
+const tally = (list, cs) => {
+const t = {};
+list.forEach((sp, j) => { const c = parseFormula(sp); for (const k in c) t[k] = (t[k] || 0) + c[k] * cs[j]; });
+return t;
+};
+const nR = eq.r.length;
+const L = tally(eq.r, coefs.slice(0, nR));
+const R = tally(eq.p, coefs.slice(nR));
+const els = [...new Set([...Object.keys(L), ...Object.keys(R)])];
+const off = els.filter(e => (L[e] || 0) !== (R[e] || 0));
+const g = coefs.reduce((a, b) => gcd(a, b));
+return { off, lowest: g === 1 };
+}
+
+
+function splitProducts(str) {
+const s = String(str).trim();
+if (!s) return [];
+return s.split("+").map(t => {
+let x = normalize(t);
+let prev;
+do { prev = x; x = x.replace(/(s|l|g|aq)$/i, ""); } while (x !== prev);
+x = x.replace(/^\d+/, "");
+return x;
+}).filter(Boolean);
+}
+
+
+const R1 = [
+{ name: "iron(III) sulfate", accept: ["Fe2(SO4)3"], hint: "Iron here is 3+ and sulfate is SO₄²⁻. Find the lowest numbers that make the charges cancel, and keep sulfate in parentheses." },
+{ name: "ammonium phosphate", accept: ["(NH4)3PO4"], hint: "Ammonium is NH₄⁺ and phosphate is PO₄³⁻. How many 1+ ions does it take to cancel one 3− ion?" },
+{ name: "dinitrogen pentoxide", accept: ["N2O5"], hint: "Two nonmetals, so it’s molecular. The prefixes tell you the subscripts directly." },
+{ name: "calcium hypochlorite", accept: ["Ca(ClO)2", "Ca(OCl)2"], hint: "Hypochlorite is ClO⁻, one oxygen fewer than chlorite. Calcium is 2+." },
+{ name: "tin(IV) oxide", accept: ["SnO2"], hint: "Tin is 4+ and oxide is 2−. Reduce to the lowest ratio." },
+{ name: "sulfurous acid", accept: ["H2SO3"], hint: "An “-ous” acid comes from an “-ite” ion. Sulfite is SO₃²⁻." },
+{ name: "copper(II) hydroxide", accept: ["Cu(OH)2"], hint: "Hydroxide is OH⁻. Two of them balance one Cu²⁺, so it needs parentheses." },
+{ name: "aluminum dichromate", accept: ["Al2(Cr2O7)3"], hint: "Dichromate is Cr₂O₇²⁻ and aluminum is 3+. Cross the charges over." },
+{ name: "hydrobromic acid", accept: ["HBr"], hint: "“Hydro-…-ic” acids have no oxygen. Bromide is Br⁻." },
+{ name: "lead(II) nitrite", accept: ["Pb(NO2)2"], hint: "Nitrite has one fewer oxygen than nitrate: NO₂⁻. Lead is 2+." },
+{ name: "sodium hydrogen carbonate", accept: ["NaHCO3"], hint: "Hydrogen carbonate (bicarbonate) is HCO₃⁻, a single 1− ion." },
+{ name: "phosphorus trichloride", accept: ["PCl3"], hint: "Two nonmetals: use the prefixes. No prefix on the first element means one." },
+{ name: "mercury(I) chloride", accept: ["Hg2Cl2"], traps: { HgCl: "So close. Mercury(I) doesn’t travel alone: it exists as the pair Hg₂²⁺." }, hint: "Mercury(I) is the odd one out: it exists as the pair Hg₂²⁺, and that pair isn’t reduced." },
+{ name: "chloric acid", accept: ["HClO3"], hint: "An “-ic” acid comes from an “-ate” ion. Chlorate is ClO₃⁻." }
+];
+
+
+const R2 = [
+{ r: ["C3H8", "O2"], p: ["CO2", "H2O"], hint: "Balance carbon, then hydrogen, and save oxygen for last." },
+{ r: ["Al", "CuSO4"], p: ["Al2(SO4)3", "Cu"], hint: "Treat SO₄ as one unit, since it appears unchanged on both sides." },
+{ r: ["Fe2O3", "CO"], p: ["Fe", "CO2"], hint: "Each CO picks up one oxygen to become CO₂. How many oxygens does Fe₂O₃ give up?" },
+{ r: ["C6H14", "O2"], p: ["CO2", "H2O"], hint: "If oxygen needs a half-number, double every coefficient." },
+{ r: ["Ca3(PO4)2", "H2SO4"], p: ["CaSO4", "H3PO4"], hint: "Keep PO₄ and SO₄ together as units. Start with calcium." },
+{ r: ["Fe", "O2"], p: ["Fe2O3"], hint: "Oxygen goes from pairs (O₂) to threes. What’s the lowest common multiple of 2 and 3?" },
+{ r: ["NH3", "O2"], p: ["NO", "H2O"], hint: "Balance H first using NH₃ and H₂O. Oxygen will come out odd, so double everything." },
+{ r: ["Al(OH)3", "H2SO4"], p: ["Al2(SO4)3", "H2O"], hint: "Balance aluminum and sulfate first; water picks up the leftover H and O." },
+{ r: ["C2H6", "O2"], p: ["CO2", "H2O"], hint: "Ethane gives an odd number of oxygen atoms on the right. Double to clear the half." }
+];
+const R2_BOSS = { r: ["KMnO4", "HCl"], p: ["KCl", "MnCl2", "Cl2", "H2O"], boss: true, hint: "Balance K, Mn, and O first (water takes all the oxygen). Then H fixes HCl, and Cl₂ takes whatever chlorine is left. Double if you hit a half." };
+
+
+const TYPES = ["Synthesis", "Decomposition", "Single replacement", "Double replacement", "Combustion", "No reaction"];
+const R3 = [
+{ rx: "Mg(s) + HCl(aq)", type: "Single replacement", prods: [["MgCl2"], ["H2"]], hint: "Magnesium is above hydrogen on the activity series, so it takes hydrogen’s place. Hydrogen on its own is diatomic." },
+{ rx: "AgNO3(aq) + NaCl(aq)", type: "Double replacement", prods: [["AgCl"], ["NaNO3"]], hint: "The cations swap partners. Silver chloride is the solid that forms." },
+{ rx: "C2H5OH(l) + O2(g)", type: "Combustion", prods: [["CO2"], ["H2O"]], hint: "A compound of C, H, and O burning in oxygen." },
+{ rx: "KClO3(s) + heat", type: "Decomposition", prods: [["KCl"], ["O2"]], hint: "One reactant breaks apart. Potassium chlorate gives off oxygen gas and leaves a simple salt." },
+{ rx: "Cu(s) + AgNO3(aq)", note: "Copper forms Cu²⁺ here.", type: "Single replacement", prods: [["Cu(NO3)2"], ["Ag"]], hint: "Copper is more active than silver. Copper becomes Cu²⁺, so it pairs with two nitrates." },
+{ rx: "Ba(OH)2(aq) + H3PO4(aq)", type: "Double replacement", prods: [["Ba3(PO4)2"], ["H2O", "HOH"]], hint: "Acid plus base: a salt and water. Balance the charges of Ba²⁺ and PO₄³⁻ in the salt." },
+{ rx: "Na2CO3(aq) + HCl(aq)", type: "Double replacement", prods: [["NaCl"], ["H2O", "HOH"], ["CO2"]], hint: "The swap gives NaCl and H₂CO₃, but carbonic acid breaks down right away. Into what?" },
+{ rx: "Li(s) + N2(g)", type: "Synthesis", prods: [["Li3N"]], hint: "Two elements combine into one ionic compound. Lithium is 1+ and nitride is 3−." },
+{ rx: "Cl2(g) + NaBr(aq)", type: "Single replacement", prods: [["NaCl"], ["Br2"]], hint: "Chlorine is more reactive than bromine, so it replaces it. Bromine on its own is diatomic." },
+{ rx: "CaCO3(s) + heat", type: "Decomposition", prods: [["CaO"], ["CO2"]], hint: "Metal carbonates break down into a metal oxide and a gas." }
+];
+const R3_NR = [
+{ rx: "Au(s) + HCl(aq)", type: "No reaction", prods: [], hint: "Check the activity series: is gold above or below hydrogen?" },
+{ rx: "Ag(s) + Cu(NO3)2(aq)", type: "No reaction", prods: [], hint: "Can silver replace copper? Compare their places on the activity series." }
+];
+
+
+const FINAL = [
+{ text: "a solution of lead(II) nitrate was mixed with a solution of potassium iodide, and a bright yellow solid appeared", order: ["lead(II) nitrate", "potassium iodide", "the yellow solid", "the dissolved product"], r: ["Pb(NO3)2", "KI"], p: ["PbI2", "KNO3"], code: [1, 2, 1, 2], hint: "Double replacement. Lead(II) is 2+, so the yellow solid needs two iodides." },
+{ text: "a strip of aluminum was dropped into copper(II) chloride solution, and reddish-brown metal coated the strip", order: ["aluminum", "copper(II) chloride", "the new compound", "the metal coating"], r: ["Al", "CuCl2"], p: ["AlCl3", "Cu"], code: [2, 3, 2, 3], hint: "Single replacement. Aluminum becomes Al³⁺; balance chlorine between CuCl₂ and AlCl₃ first." },
+{ text: "sodium hydroxide solution was added to iron(III) chloride solution, and a rust-colored solid formed", order: ["iron(III) chloride", "sodium hydroxide", "the rust-colored solid", "the dissolved product"], r: ["FeCl3", "NaOH"], p: ["Fe(OH)3", "NaCl"], code: [1, 3, 1, 3], hint: "Double replacement. Iron(III) needs three hydroxides." },
+{ text: "calcium chloride solution was mixed with sodium phosphate solution, and a white solid formed", order: ["calcium chloride", "sodium phosphate", "the white solid", "the dissolved product"], r: ["CaCl2", "Na3PO4"], p: ["Ca3(PO4)2", "NaCl"], code: [3, 2, 1, 6], hint: "Double replacement. The solid is calcium phosphate: three Ca²⁺ balance two PO₄³⁻." }
+];
+const KEY = "stockroom204-v1";
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = f => esc(f).replace(/([A-Za-z\)])(\d+)/g, "1<sub>2</sub>");
+const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+const range = n => [...Array(n).keys()];
+
+
+let S = null;
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function load() { try { const v = localStorage.getItem(KEY); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+
+
+function newRun(team, limit) {
+const nr = Math.floor(Math.random() * R3_NR.length);
+const r3 = shuffle([...shuffle(range(R3.length)).slice(0, 5).map(i => "r3-" + i), "nr-" + nr]);
+return {
+team, limit, startedAt: Date.now(), runningSince: Date.now(), accumulated: 0, penalty: 0, paused: false,
+picks: { r1: shuffle(range(R1.length)).slice(0, 6), r2: shuffle(range(R2.length)).slice(0, 4), r3, fin: Math.floor(Math.random() * FINAL.length) },
+solved: {}, hints: {}, wrong: 0, finishedAt: null
+};
+}
+
+
+function elapsed() {
+if (S.finishedAt != null) return S.finishedAt;
+return S.accumulated + (S.paused ? 0 : (Date.now() - S.runningSince) / 1000) + S.penalty;
+}
+const mmss = t => { t = Math.max(0, Math.floor(t)); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
+
+
+function tick() {
+if (!S) return;
+const el = $("#time"), e = elapsed();
+el.classList.remove("low", "over");
+if (!S.limit) { el.textContent = mmss(e); el.setAttribute("aria-label", "Time used"); }
+else {
+const left = S.limit - e;
+if (left >= 0) { el.textContent = mmss(left); if (left < 300) el.classList.add("low"); }
+else { el.textContent = "+" + mmss(-left); el.classList.add("over"); }
+}
+$("#pause").textContent = S.paused ? "Resume" : "Pause";
+$("#pause").hidden = S.finishedAt != null;
+}
+
+
+/* ---------- Diamond ---------- */
+const QUADS = [
+{ room: 1, c: "blue", pts: "30,30 60,60 30,90 0,60", lx: 30, ly: 60 },
+{ room: 2, c: "red", pts: "60,0 90,30 60,60 30,30", lx: 60, ly: 30 },
+{ room: 3, c: "yellow", pts: "90,30 120,60 90,90 60,60", lx: 90, ly: 60 },
+{ room: 4, c: "white", pts: "60,60 90,90 60,120 30,90", lx: 60, ly: 90 }
+];
+function drawDiamonds() {
+document.querySelectorAll("[data-diamond]").forEach(svg => {
+const mini = svg.dataset.diamond === "mini";
+svg.innerHTML = QUADS.map(q => {
+const on = S && roomDone(q.room);
+const lbl = mini ? "" : `<text class="qlabelon?"on"+(q.c==="yellow"||q.c==="white"?"dark":""):"""x="{q.lx}" y="q.ly">{on ? (q.room === 4 ? "★" : "✓") : (q.room === 4 ? "★" : q.room)}</text>`;
+return `<polygon class="q on?q.c:"empty""points="{q.pts}"/>` + lbl;
+}).join("");
+});
+}
+
+
+/* ---------- Room status ---------- */
+const ids = n => n === 1 ? S.picks.r1.map(i => "r1-" + i) : n === 2 ? [...S.picks.r2.map(i => "r2-" + i), "r2-boss"] : n === 3 ? S.picks.r3 : ["fin"];
+const roomDone = n => ids(n).every(id => S.solved[id] != null);
+const roomOpen = n => n === 1 || roomDone(n - 1);
+
+
+/* ---------- Shared item bits ---------- */
+function useHint(id) {
+if (!S.hints[id]) { S.hints[id] = true; S.penalty += 60; save(); tick(); }
+const b = document.querySelector(`[data-hint="${id}"]`); if (b) b.hidden = true;
+const h = $("#hint-" + id); if (h) h.hidden = false;
+}
+function feedback(id, ok, msg) {
+const f = $("#fb-" + id); f.className = "fb " + (ok ? "ok" : "bad"); f.innerHTML = msg;
+}
+function markSolved(id, value, n) {
+S.solved[id] = value; save();
+const li = $("#it-" + id); li.classList.add("done");
+li.querySelectorAll("input, select, button.btn").forEach(x => x.disabled = true);
+const hb = li.querySelector("[data-hint]"); if (hb) hb.hidden = true;
+updateCount(n);
+if (roomDone(n)) {
+drawDiamonds();
+if (n < 4) { renderRoom(n); renderRoom(n + 1); setTimeout(() => { const nx = $("#room" + (n + 1)); nx.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }); }, 350); }
+}
+}
+function miss(n) { S.wrong++; save(); }
+function updateCount(n) {
+const c = $("#count-" + n); if (!c) return;
+const all = ids(n), done = all.filter(id => S.solved[id] != null).length;
+c.textContent = done === all.length ? "" : `${done} of ${all.length} solved`;
+if (done === all.length) c.outerHTML = `<span class="cleared">Room cleared</span>`;
+}
+
+
+/* ---------- Room 1: formulas ---------- */
+function r1Item(id) {
+const q = R1[+id.split("-")[1]], done = S.solved[id] != null;
+return `<li class="itemdone?"done":"""id="it-{id}">
+<p class="prompt">${esc(q.name)}</p>
+<div class="row">
+<label class="sr" for="in-${id}">Formula for ${esc(q.name)}</label>
+<input class="field formula" id="in-id"data-preview="{id}" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Formula" value="${done ? esc(S.solved[id]) : ""}" ${done ? "disabled" : ""}>
+<button class="btn" type="button" data-check="${id}" ${done ? "disabled" : ""}>Check</button>
+${done ? "" : `<button class="hintbtn" type="button" data-hint="${id}" ${S.hints[id] ? "hidden" : ""}>Hint (+1 min)</button>`}
+</div>
+<div class="preview" id="pv-id"aria-hidden="true">{done ? "<b>" + fmt(S.solved[id]) + "</b>" : ""}</div>
+${done ? "" : `<p class="hint" id="hint-${id}" S.hints[id]?"":"hidden">{esc(q.hint)}</p>`}
+<p class="fbdone?"ok":"""id="fb-{id}" aria-live="polite">${done ? "Labeled." : ""}</p>
+</li>`;
+}
+function checkR1(id) {
+const q = R1[+id.split("-")[1]];
+const raw = $("#in-" + id).value, v = normalize(raw);
+if (!v) return feedback(id, false, "Type a formula first.");
+if (q.accept.includes(v)) { feedback(id, true, "Labeled."); return markSolved(id, q.accept[0], 1); }
+miss(1);
+if (q.traps && q.traps[v]) return feedback(id, false, esc(q.traps[v]));
+let p; try { p = parseFormula(v); } catch (e) { return feedback(id, false, esc(e.message)); }
+if (sameCounts(p, parseFormula(q.accept[0]))) return feedback(id, false, "Right atoms, wrong format. Write the cation first, and put a polyatomic ion in parentheses when there’s more than one of it.");
+feedback(id, false, "Not yet. Check the ion charges and how many of each ion it takes to make them cancel.");
+}
+
+
+/* ---------- Room 2: balancing ---------- */
+const r2Eq = id => id === "r2-boss" ? R2_BOSS : R2[+id.split("-")[1]];
+function r2Item(id) {
+const q = r2Eq(id), done = S.solved[id] != null, vals = done ? S.solved[id] : [];
+const all = [...q.r, ...q.p];
+const sp = (f, j) => `<span class="sp"><label class="sr" for="c-id-{j}">Coefficient for esc(f)</label><inputclass="fieldcoef"id="c-{id}-j"inputmode="numeric"maxlength="2"value="{done ? vals[j] : ""}" done?"disabled":""><span>{fmt(f)}</span></span>`;
+let parts = [], j = 0;
+q.r.forEach((f, k) => { if (k) parts.push(`<span class="op">+</span>`); parts.push(sp(f, j++)); });
+parts.push(`<span class="op" aria-label="yields">→</span>`);
+q.p.forEach((f, k) => { if (k) parts.push(`<span class="op">+</span>`); parts.push(sp(f, j++)); });
+return `<li class="itemdone?"done":"""id="it-{id}">
+${q.boss ? `<p class="prompt">The log’s last entry<span class="boss">Challenge</span></p>` : ""}
+<div class="eq">${parts.join("")}</div>
+<div class="row">
+<button class="btn" type="button" data-check="${id}" ${done ? "disabled" : ""}>Check</button>
+${done ? "" : `<button class="hintbtn" type="button" data-hint="${id}" ${S.hints[id] ? "hidden" : ""}>Hint (+1 min)</button>`}
+</div>
+${done ? "" : `<p class="hint" id="hint-${id}" S.hints[id]?"":"hidden">{esc(q.hint)}</p>`}
+<p class="fbdone?"ok":"""id="fb-{id}" aria-live="polite">${done ? "Balanced." : ""}</p>
+</li>`;
+}
+function checkR2(id) {
+const q = r2Eq(id), n = q.r.length + q.p.length;
+const cs = [];
+for (let j = 0; j < n; j++) {
+const t = (`#c-{id}-${j}`).value.trim();
+if (t === "") { cs.push(1); continue; }
+if (!/^\d+$/.test(t) || +t < 1) return feedback(id, false, "Coefficients must be whole numbers of 1 or more.");
+cs.push(+t);
+}
+const r = checkBalance(q, cs);
+if (!r.off.length && r.lowest) { feedback(id, true, "Balanced."); cs.forEach((c, j) => (`#c-{id}-${j}`).value = c); return markSolved(id, cs, 2); }
+miss(2);
+if (!r.off.length) return feedback(id, false, "It’s balanced, but not in lowest whole numbers. Divide everything by a common factor.");
+feedback(id, false, r.off.length === 1 ? "One element is still unbalanced. Count atoms on each side again." : `${r.off.length} elements are still unbalanced.`);
+}
+
+
+/* ---------- Room 3: predicting products ---------- */
+const r3Q = id => id.startsWith("nr-") ? R3_NR[+id.split("-")[1]] : R3[+id.split("-")[1]];
+function r3Item(id) {
+const q = r3Q(id), done = S.solved[id] != null, sv = done ? S.solved[id] : null;
+const [left, note] = [q.rx, q.note];
+const rx = left.split(" + ").map(t => fmt(t)).join(" + ");
+return `<li class="itemdone?"done":"""id="it-{id}">
+<p class="prompt">rx→{note ? `<span class="note">${esc(note)}</span>` : ""}</p>
+<div class="row">
+<label class="sr" for="ty-${id}">Reaction type</label>
+<select class="field" id="ty-id"data-type="{id}" ${done ? "disabled" : ""}>
+<option value="">Reaction type…</option>
+${TYPES.map(t => `<option sv&&sv.type===t?"selected":"">{t}</option>`).join("")}
+</select>
+<label class="sr" for="in-${id}">Products</label>
+<input class="field products" id="in-id"data-preview="{id}" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sv&&sv.type==="Noreaction"?"Noproducts":"Products,e.g.A+B""value="{sv ? esc(sv.prods) : ""}" ${done || (sv && sv.type === "No reaction") ? "disabled" : ""}>
+</div>
+<div class="preview" id="pv-id"aria-hidden="true">{sv && sv.prods ? "<b>" + sv.prods.split("+").map(t => fmt(t.trim())).join(" + ") + "</b>" : ""}</div>
+<div class="row">
+<button class="btn" type="button" data-check="${id}" ${done ? "disabled" : ""}>Check</button>
+${done ? "" : `<button class="hintbtn" type="button" data-hint="${id}" ${S.hints[id] ? "hidden" : ""}>Hint (+1 min)</button>`}
+</div>
+${done ? "" : `<p class="hint" id="hint-${id}" S.hints[id]?"":"hidden">{esc(q.hint)}</p>`}
+<p class="fbdone?"ok":"""id="fb-{id}" aria-live="polite">${done ? "Identified." : ""}</p>
+</li>`;
+}
+function checkR3(id) {
+const q = r3Q(id), type = $("#ty-" + id).value, raw = $("#in-" + id).value;
+if (!type) return feedback(id, false, "Pick a reaction type first.");
+const typeOk = type === q.type;
+if (type === "No reaction") {
+if (typeOk) { feedback(id, true, "Identified. Nothing happens."); return markSolved(id, { type, prods: "" }, 3); }
+miss(3); return feedback(id, false, "Something does happen here. Look again at the activity series and the reactants.");
+}
+if (q.type === "No reaction" && type !== "No reaction") {
+miss(3); return feedback(id, false, "Check the activity series before predicting products for this one.");
+}
+const terms = splitProducts(raw);
+if (!terms.length) return feedback(id, false, "Write the products, separated by +.");
+for (const t of terms) { try { parseFormula(t); } catch (e) { return feedback(id, false, esc(e.message)); } }
+const used = new Set(); let right = 0, formatOnly = false, diatomic = false;
+terms.forEach(t => {
+const k = q.prods.findIndex((alts, i) => !used.has(i) && alts.includes(t));
+if (k >= 0) { used.add(k); right++; return; }
+const pc = parseFormula(t);
+if (q.prods.some((alts, i) => !used.has(i) && sameCounts(pc, parseFormula(alts[0])))) formatOnly = true;
+if (["H", "N", "O", "F", "Cl", "Br", "I"].includes(t)) diatomic = true;
+});
+const prodsOk = right === q.prods.length && terms.length === q.prods.length;
+if (typeOk && prodsOk) {
+feedback(id, true, "Identified.");
+return markSolved(id, { type, prods: q.prods.map(a => a[0]).join(" + ") }, 3);
+}
+miss(3);
+const msgs = [];
+msgs.push(typeOk ? "Reaction type is right." : "Reaction type isn’t right yet.");
+if (!prodsOk) {
+msgs.push(`${right} of q.prods.lengthproductscorrect{terms.length > q.prods.length ? ", and there are extras" : ""}.`);
+if (diatomic) msgs.push("Remember the seven diatomic elements.");
+if (formatOnly) msgs.push("One has the right atoms but the wrong format; check parentheses and order.");
+} else msgs.push("Products are right.");
+feedback(id, false, msgs.join(" "));
+}
+
+
+/* ---------- Room 4: the door ---------- */
+let dial = [0, 0, 0, 0];
+function r4Body() {
+const q = FINAL[S.picks.fin], done = S.solved.fin != null;
+if (done) dial = q.code.slice();
+return `<p class="story">The door’s last log entry: ${esc(q.text)}.</p>
+<p>Write the formulas, predict the products, and balance the equation. Then dial in the coefficients in this order:</p>
+<ol class="order">${q.order.map(o => `<li>${esc(o)}</li>`).join("")}</ol>
+<div class="dials" id="dials">${q.order.map((o, i) => `
+<div class="dial">
+<button type="button" data-dial="${i}" data-d="1" aria-label="Increase ${esc(o)}" ${done ? "disabled" : ""}>▲</button>
+<output id="dv-i"aria-live="polite">{dial[i]}</output>
+<button type="button" data-dial="${i}" data-d="-1" aria-label="Decrease ${esc(o)}" ${done ? "disabled" : ""}>▼</button>
+<span>${esc(o)}</span>
+</div>`).join("")}
+</div>
+<div class="row">
+<button class="btn" type="button" id="open" ${done ? "disabled" : ""}>Open the door</button>
+${done ? "" : `<button class="hintbtn" type="button" data-hint="fin" ${S.hints.fin ? "hidden" : ""}>Hint (+1 min)</button>`}
+</div>
+<p class="hint" id="hint-fin" S.hints.fin?"":"hidden">{esc(q.hint)}</p>
+<p class="fb" id="fb-fin" aria-live="polite"></p>`;
+}
+function tryDoor() {
+const q = FINAL[S.picks.fin];
+if (dial.every((d, i) => d === q.code[i])) {
+S.solved.fin = dial.slice(); S.finishedAt = elapsed(); save();
+drawDiamonds(); showEscaped(); return;
+}
+miss(4);
+const d = $("#dials"); d.classList.remove("shake"); void d.offsetWidth; d.classList.add("shake");
+feedback("fin", false, dial.includes(0) ? "The bolts didn’t move. Every coefficient is at least 1." : "The bolts didn’t move. Check your products, then recount every atom.");
+}
+
+
+/* ---------- Rendering ---------- */
+const ROOMS = {
+1: { title: "Room 1: The reagent shelf", intro: "These bottles lost the formulas on their labels. Write the chemical formula for each name. Type numbers normally; they’ll show as subscripts.", item: r1Item },
+2: { title: "Room 2: The reaction log", intro: "Someone logged these reactions without balancing them. Enter the lowest whole-number coefficients. An empty box counts as 1.", item: r2Item },
+3: { title: "Room 3: The unknown samples", intro: "Predict what forms in each mix. Choose the reaction type, then write the products separated by +. Coefficients and state symbols are optional. If nothing happens, choose No reaction.", item: r3Item },
+4: { title: "The door", intro: "" }
+};
+function renderRoom(n) {
+const el = $("#room" + n), R = ROOMS[n];
+if (!roomOpen(n)) {
+el.className = "panel room locked";
+el.innerHTML = `<h2>${R.title}</h2><p>Locked. Clear ${n === 2 ? "Room 1" : n === 3 ? "Room 2" : "Room 3"} to open it.</p>`;
+return;
+}
+el.className = "panel room";
+const all = ids(n), done = all.filter(id => S.solved[id] != null).length;
+const status = done === all.length ? `<span class="cleared">n===4?"Open":"Roomcleared"</span>`:(n===4?"":`<spanclass="count"id="count-{n}">${done} of ${all.length} solved</span>`);
+const head = `<div class="roomhead"><h2>R.title</h2>{status}</div>`;
+if (n === 4) { el.innerHTML = head + r4Body(); return; }
+el.innerHTML = head + `<p>R.intro</p><olclass="items">{all.map(R.item).join("")}</ol>`;
+}
+function renderAll() {
+[1, 2, 3, 4].forEach(renderRoom);
+drawDiamonds();
+$("#barname").innerHTML = esc(S.team || "Stockroom 204") + `<small>Stockroom 204</small>`;
+}
+
+
+function showEscaped() {
+$("#game").hidden = true; $("#hero").hidden = true;
+const e = $("#escaped"); e.hidden = false;
+const nh = Object.keys(S.hints).length;
+const used = S.finishedAt;
+const over = S.limit && used > S.limit;
+e.innerHTML = `<svg viewBox="-4 -4 128 128" aria-hidden="true" data-diamond="end"></svg>
+<h2>${over ? "Out, in overtime" : "You’re out"}</h2>
+<p>${esc(S.team || "Your team")} cleared Stockroom 204. Show this screen to your teacher.</p>
+<div class="stats">
+<div><strong>${mmss(used)}</strong><span>time, with hint penalties</span></div>
+<div><strong>nh</strong><span>hint{nh === 1 ? "" : "s"} used</span></div>
+<div><strong>S.wrong</strong><span>wrongattempt{S.wrong === 1 ? "" : "s"}</span></div>
+</div>
+<button class="btn" type="button" id="again">Start a new run</button>`;
+drawDiamonds(); tick();
+window.scrollTo(0, 0);
+}
+
+
+function enterGame() {
+$("#setup").hidden = true; $("#bar").hidden = false;
+if (S.finishedAt != null) { showEscaped(); return; }
+$("#game").hidden = false; $("#hero").hidden = false; $("#escaped").hidden = true;
+renderAll(); tick();
+}
+
+
+/* ---------- Events ---------- */
+document.addEventListener("click", ev => {
+const t = ev.target.closest("button"); if (!t) return;
+if (t.id === "start") {
+const lim = +document.querySelector('input[name="limit"]:checked').value;
+S = newRun($("#team").value.trim(), lim); dial = [0, 0, 0, 0]; save(); enterGame(); return;
+}
+if (t.id === "pause") {
+if (S.paused) { S.paused = false; S.runningSince = Date.now(); }
+else { S.accumulated += (Date.now() - S.runningSince) / 1000; S.paused = true; }
+save(); tick(); return;
+}
+if (t.id === "reset" || t.id === "again") {
+if (t.id === "reset" && S && !confirm("Start over? This clears your team’s progress on this device.")) return;
+try { localStorage.removeItem(KEY); } catch (e) {}
+S = null; dial = [0, 0, 0, 0];
+$("#bar").hidden = true; $("#game").hidden = true; $("#escaped").hidden = true; $("#hero").hidden = false; $("#setup").hidden = false;
+drawDiamonds(); window.scrollTo(0, 0); $("#team").focus(); return;
+}
+if (!S) return;
+if (t.dataset.hint) return useHint(t.dataset.hint);
+if (t.dataset.check) {
+const id = t.dataset.check;
+if (id.startsWith("r1-")) return checkR1(id);
+if (id.startsWith("r2-")) return checkR2(id);
+return checkR3(id);
+}
+if (t.dataset.dial != null) {
+const i = +t.dataset.dial; dial[i] = (dial[i] + +t.dataset.d + 10) % 10;
+$("#dv-" + i).textContent = dial[i]; $("#fb-fin").textContent = ""; $("#fb-fin").className = "fb"; return;
+}
+if (t.id === "open") return tryDoor();
+});
+document.addEventListener("input", ev => {
+const id = ev.target.dataset && ev.target.dataset.preview; if (!id) return;
+const v = ev.target.value;
+const pv = $("#pv-" + id);
+pv.innerHTML = v.trim() ? "<b>" + v.split("+").map(t => fmt(normalize(t))).join(" + ") + "</b>" : "";
+});
+document.addEventListener("change", ev => {
+const id = ev.target.dataset && ev.target.dataset.type; if (!id) return;
+const inp = $("#in-" + id), nr = ev.target.value === "No reaction";
+inp.disabled = nr; inp.placeholder = nr ? "No products" : "Products, e.g. A + B";
+if (nr) { inp.value = ""; $("#pv-" + id).innerHTML = ""; }
+});
+document.addEventListener("keydown", ev => {
+if (ev.key !== "Enter" || !S) return;
+const el = ev.target; if (!el.closest) return;
+const li = el.closest(".item"); if (!li) return;
+const b = li.querySelector("[data-check]"); if (b && !b.disabled) { ev.preventDefault(); b.click(); }
+});
+
+
+/* ---------- Boot ---------- */
+S = load();
+if (S && !S.picks) S = null;
+drawDiamonds();
+if (S) enterGame();
+setInterval(tick, 1000);
+</script>
+</body></html>
+
+
+
+
+
